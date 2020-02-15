@@ -120,7 +120,6 @@ pub fn search_index_classic(
     report
 }
 
-
 #[inline]
 pub fn search_index_bigvec(
     bigsi_map: &bigsi_rs::Bigsi,
@@ -294,7 +293,6 @@ impl<'a> SeqReadstr<'a> {
         }
     }
 }
-
 
 #[allow(unused_assignments)]
 pub fn parallel_vec_bigvec(
@@ -730,7 +728,6 @@ pub fn false_prob(m: f64, k: f64, n: f64) -> f64 {
     let e = std::f64::consts::E;
     (1.0 - e.powf(-((k * (n + 0.5)) / (m - 1.0)))).powf(k)
 }
-
 
 #[allow(unused_assignments)]
 pub fn per_read_stream_pe_itertools(

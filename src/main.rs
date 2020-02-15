@@ -386,14 +386,6 @@ fn main() -> std::io::Result<()> {
                         .long("down_sample"),
                 )
                 .arg(
-                    Arg::with_name("high_mem_load")
-                        .help("When this flag is set, a faster, but less memory efficient method to load the index is used. Loading the index requires approximately 2X the size of the index of RAM. ")
-                        .required(false)
-                        .short("H")
-                        .takes_value(false)
-                        .long("high_mem_load"),
-                )
-                .arg(
                     Arg::with_name("fp_correct")
                         .help("Parameter to correct for false positives, default 3 (= 0.001), maybe increased for larger searches. Adjust for larger datasets")
                         .required(false)
@@ -706,9 +698,6 @@ fn main() -> std::io::Result<()> {
                         files1,
                         &db,
                         &colors,
-                        &ref_kmers,
-                        db.bigsi.len() as u64,
-                        db.num_hashes,
                         parameters.k_size,
                         cov,
                     )
@@ -717,9 +706,6 @@ fn main() -> std::io::Result<()> {
                         files1,
                         &db,
                         &colors,
-                        &ref_kmers,
-                        db.bigsi.len() as u64,
-                        db.num_hashes,
                         parameters.k_size,
                         cov,
                     )
@@ -731,9 +717,6 @@ fn main() -> std::io::Result<()> {
                         files1,
                         &db,
                         &colors,
-                        &ref_kmers,
-                        db.bigsi.len() as u64,
-                        db.num_hashes,
                         parameters.k_size,
                         cov,
                     )
@@ -744,8 +727,6 @@ fn main() -> std::io::Result<()> {
                         &db,
                         &colors,
                         &ref_kmers,
-                        db.bigsi.len() as u64,
-                        db.num_hashes,
                         parameters.k_size,
                         filter,
                         cov,
@@ -775,6 +756,11 @@ fn main() -> std::io::Result<()> {
         );
         let colors: fnv::FnvHashMap<usize, String> =
             deserialize_from(&mut reader).expect("can't deserialize");
+        //ref_kmers
+        let mut reader = BufReader::new(
+            File::open(&(index.to_owned() + "/ref_kmers")).expect("Can't open parameters!"),
+        );
+        let ref_kmers: fnv::FnvHashMap<String, usize> = deserialize_from(&mut reader).expect("can't deserialize");
         match bigsi_time.elapsed() {
             Ok(elapsed) => {
                 eprintln!("Index loaded in {} seconds", elapsed.as_secs());
@@ -795,7 +781,13 @@ fn main() -> std::io::Result<()> {
         );
         println!("accessions:");
         for (_key, value) in colors {
-            println!("{}", value);
+            let k_size = ref_kmers.get(&value).unwrap();
+            println!(
+                "{} {} {:.3}",
+                value,
+                k_size,
+                false_prob(db.bigsi.len() as f64, db.num_hashes as f64, *k_size as f64)
+            );
         }
 
         /*
@@ -990,7 +982,6 @@ fn main() -> std::io::Result<()> {
         let index = matches.value_of("bigsi").unwrap();
         let quality = value_t!(matches, "quality", u8).unwrap_or(15);
         let batch = value_t!(matches, "batch", usize).unwrap_or(50000);
-        let high_mem_load = matches.is_present("high_mem_load");
         let bitvector_sample = value_t!(matches, "bitvector_sample", usize).unwrap_or(3);
         let tag = matches.value_of("tag").unwrap();
         let supress_taxon = matches.value_of("supress_taxon").unwrap_or("None");
@@ -1003,7 +994,6 @@ fn main() -> std::io::Result<()> {
             batch,
             quality,
             bitvector_sample,
-            high_mem_load,
             tag,
             supress_taxon,
         );
@@ -1014,7 +1004,7 @@ fn main() -> std::io::Result<()> {
         let taxon = matches.value_of("taxon").unwrap();
         let prefix = matches.value_of("prefix").unwrap();
         let exclude = matches.is_present("exclude");
-        let map = colorid::read_filter::tab_to_map(classification.to_string(), taxon, "accept");
+        let map = colorid::read_filter::tab_to_map(classification.to_string(), taxon);
         if files.len() == 1 {
             colorid::read_filter::read_filter_se(map, files, taxon, prefix, exclude);
         } else {

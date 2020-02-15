@@ -10,7 +10,6 @@ use std::io::prelude::*;
 pub fn tab_to_map(
     filename: String,
     query: &str,
-    accept: &str,
 ) -> std::collections::HashMap<std::string::String, String> {
     let mut map = HashMap::new();
     let f = File::open(filename).expect("classification file not found");

@@ -15,7 +15,6 @@ pub fn read_id_batch(
     batch: usize,
     quality: u8,
     bitvector_sample: usize,
-    high_mem_load: bool,
     tag: &str,
     supress_taxon: &str,
 ) {

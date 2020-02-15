@@ -1,3 +1,4 @@
+extern crate bigsi_rs;
 extern crate bincode;
 extern crate bv;
 extern crate fasthash;
@@ -5,7 +6,6 @@ extern crate flate2;
 extern crate fnv;
 extern crate probability;
 extern crate rayon;
-extern crate bigsi_rs;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
@@ -31,4 +31,3 @@ pub mod reports;
 pub mod read_filter;
 
 pub mod seq;
-

@@ -1,8 +1,8 @@
 //extern crate bit_vec;
 //extern crate rayon;
 
-use bigsi_rs;
 use super::kmer;
+use bigsi_rs;
 use fnv;
 use rayon::prelude::*;
 use std;
@@ -142,7 +142,11 @@ pub fn build_multi_bigvec_mutex(
         .unwrap();
     let map_length = map.len();
     //let mut bigsi = bi::Bigsi::new(bloom_size, map_length as u64, num_hash);
-    let bigsi = Mutex::new(bigsi_rs::Bigsi::new(bloom_size, map_length as u64, num_hash));
+    let bigsi = Mutex::new(bigsi_rs::Bigsi::new(
+        bloom_size,
+        map_length as u64,
+        num_hash,
+    ));
     let ref_kmer = Mutex::new(fnv::FnvHashMap::default());
     let mut colors_accession = fnv::FnvHashMap::default();
     let mut accession_colors = fnv::FnvHashMap::default();
@@ -166,13 +170,37 @@ pub fn build_multi_bigvec_mutex(
             //let mut out_vec: Vec<_> = vec![];
             //vec.par_iter()
             //    .map(|l| {
-            vec.par_iter_mut().for_each(|l|{
-                    if l.1.len() == 2 {
+            vec.par_iter_mut().for_each(|l| {
+                if l.1.len() == 2 {
+                    let mut unfiltered =
+                        kmer::kmers_fq_pe_qual(vec![&l.1[0], &l.1[1]], k_size, 1, quality);
+                    let kmers = if cutoff == -1 {
+                        let auto_cutoff = kmer::auto_cutoff(&unfiltered);
+                        //let mut unfiltered = kmer::kmerize_vector(&vec, k_size, 1);
+                        let keys_for_removal = kmer::get_removal_values(&unfiltered, auto_cutoff);
+                        kmer::clean_map_inplace(&mut unfiltered, &keys_for_removal);
+                        unfiltered
+                    //kmer::clean_map(unfiltered, auto_cutoff)
+                    } else {
+                        let keys_for_removal =
+                            kmer::get_removal_values(&unfiltered, cutoff as usize);
+                        kmer::clean_map_inplace(&mut unfiltered, &keys_for_removal);
+                        unfiltered
+                        //kmer::clean_map(unfiltered, cutoff as usize)
+                    };
+                    let mut ref_kmer = ref_kmer.lock().unwrap();
+                    ref_kmer.insert(colors_accession[&l.0].to_owned(), kmers.len());
+                    let mut bigsi = bigsi.lock().unwrap();
+                    for k in kmers.keys() {
+                        bigsi.insert(l.0 as u64, k);
+                    }
+                //(l.0, kmers)
+                } else {
+                    if l.1[0].ends_with("gz") {
                         let mut unfiltered =
-                            kmer::kmers_fq_pe_qual(vec![&l.1[0], &l.1[1]], k_size, 1, quality);
+                            kmer::kmers_from_fq_qual(l.1[0].to_owned(), k_size, 1, 15);
                         let kmers = if cutoff == -1 {
                             let auto_cutoff = kmer::auto_cutoff(&unfiltered);
-                            //let mut unfiltered = kmer::kmerize_vector(&vec, k_size, 1);
                             let keys_for_removal =
                                 kmer::get_removal_values(&unfiltered, auto_cutoff);
                             kmer::clean_map_inplace(&mut unfiltered, &keys_for_removal);
@@ -193,52 +221,27 @@ pub fn build_multi_bigvec_mutex(
                         }
                     //(l.0, kmers)
                     } else {
-                        if l.1[0].ends_with("gz") {
-                            let mut unfiltered =
-                                kmer::kmers_from_fq_qual(l.1[0].to_owned(), k_size, 1, 15);
-                            let kmers = if cutoff == -1 {
-                                let auto_cutoff = kmer::auto_cutoff(&unfiltered);
-                                let keys_for_removal =
-                                    kmer::get_removal_values(&unfiltered, auto_cutoff);
-                                kmer::clean_map_inplace(&mut unfiltered, &keys_for_removal);
-                                unfiltered
-                            //kmer::clean_map(unfiltered, auto_cutoff)
-                            } else {
-                                let keys_for_removal =
-                                    kmer::get_removal_values(&unfiltered, cutoff as usize);
-                                kmer::clean_map_inplace(&mut unfiltered, &keys_for_removal);
-                                unfiltered
-                                //kmer::clean_map(unfiltered, cutoff as usize)
-                            };
-                            let mut ref_kmer = ref_kmer.lock().unwrap();
-                            ref_kmer.insert(colors_accession[&l.0].to_owned(), kmers.len());
-                            let mut bigsi = bigsi.lock().unwrap();
-                            for k in kmers.keys() {
-                                bigsi.insert(l.0 as u64, k);
-                            }
-                        //(l.0, kmers)
+                        let vec = kmer::read_fasta(l.1[0].to_string());
+                        let kmers = if cutoff == -1 {
+                            kmer::kmerize_vector(&vec, k_size, 1)
                         } else {
-                            let vec = kmer::read_fasta(l.1[0].to_string());
-                            let kmers = if cutoff == -1 {
-                                kmer::kmerize_vector(&vec, k_size, 1)
-                            } else {
-                                let mut unfiltered = kmer::kmerize_vector(&vec, k_size, 1);
-                                let keys_for_removal =
-                                    kmer::get_removal_values(&unfiltered, cutoff as usize);
-                                kmer::clean_map_inplace(&mut unfiltered, &keys_for_removal);
-                                unfiltered
-                                //kmer::clean_map(unfiltered, cutoff as usize)
-                            };
-                            let mut ref_kmer = ref_kmer.lock().unwrap();
-                            ref_kmer.insert(colors_accession[&l.0].to_owned(), kmers.len());
-                            let mut bigsi = bigsi.lock().unwrap();
-                            for k in kmers.keys() {
-                                bigsi.insert(l.0 as u64, k);
-                            }
-                            //(l.0, kmers)
+                            let mut unfiltered = kmer::kmerize_vector(&vec, k_size, 1);
+                            let keys_for_removal =
+                                kmer::get_removal_values(&unfiltered, cutoff as usize);
+                            kmer::clean_map_inplace(&mut unfiltered, &keys_for_removal);
+                            unfiltered
+                            //kmer::clean_map(unfiltered, cutoff as usize)
+                        };
+                        let mut ref_kmer = ref_kmer.lock().unwrap();
+                        ref_kmer.insert(colors_accession[&l.0].to_owned(), kmers.len());
+                        let mut bigsi = bigsi.lock().unwrap();
+                        for k in kmers.keys() {
+                            bigsi.insert(l.0 as u64, k);
                         }
+                        //(l.0, kmers)
                     }
-                });
+                }
+            });
             //single threat
             /*
             for a in out_vec {
@@ -257,24 +260,38 @@ pub fn build_multi_bigvec_mutex(
     }
     //one last time for the remainder of the accessions
     processed += vec.len();
-    vec.par_iter_mut()
-        .for_each(|l| {
-            if l.1.len() == 2 {
-                let mut unfiltered =
-                    kmer::kmers_fq_pe_qual(vec![&l.1[0], &l.1[1]], k_size, 1, quality);
+    vec.par_iter_mut().for_each(|l| {
+        if l.1.len() == 2 {
+            let mut unfiltered = kmer::kmers_fq_pe_qual(vec![&l.1[0], &l.1[1]], k_size, 1, quality);
+            let kmers = if cutoff == -1 {
+                let auto_cutoff = kmer::auto_cutoff(&unfiltered);
+                //let mut unfiltered = kmer::kmerize_vector(&vec, k_size, 1);
+                let keys_for_removal = kmer::get_removal_values(&unfiltered, auto_cutoff);
+                kmer::clean_map_inplace(&mut unfiltered, &keys_for_removal);
+                unfiltered
+            //kmer::clean_map(unfiltered, auto_cutoff)
+            } else {
+                //let mut unfiltered = kmer::kmerize_vector(&vec, k_size, 1);
+                let keys_for_removal = kmer::get_removal_values(&unfiltered, cutoff as usize);
+                kmer::clean_map_inplace(&mut unfiltered, &keys_for_removal);
+                unfiltered
+                //kmer::clean_map(unfiltered, cutoff as usize)
+            };
+            let mut ref_kmer = ref_kmer.lock().unwrap();
+            ref_kmer.insert(colors_accession[&l.0].to_owned(), kmers.len());
+            let mut bigsi = bigsi.lock().unwrap();
+            for k in kmers.keys() {
+                bigsi.insert(l.0 as u64, k);
+            }
+        //(l.0, kmers)
+        } else {
+            if l.1[0].ends_with("gz") {
+                let unfiltered = kmer::kmers_from_fq_qual(l.1[0].to_owned(), k_size, 1, 15);
                 let kmers = if cutoff == -1 {
                     let auto_cutoff = kmer::auto_cutoff(&unfiltered);
-                    //let mut unfiltered = kmer::kmerize_vector(&vec, k_size, 1);
-                    let keys_for_removal = kmer::get_removal_values(&unfiltered, auto_cutoff);
-                    kmer::clean_map_inplace(&mut unfiltered, &keys_for_removal);
-                    unfiltered
-                //kmer::clean_map(unfiltered, auto_cutoff)
+                    kmer::clean_map(unfiltered, auto_cutoff)
                 } else {
-                    //let mut unfiltered = kmer::kmerize_vector(&vec, k_size, 1);
-                    let keys_for_removal = kmer::get_removal_values(&unfiltered, cutoff as usize);
-                    kmer::clean_map_inplace(&mut unfiltered, &keys_for_removal);
-                    unfiltered
-                    //kmer::clean_map(unfiltered, cutoff as usize)
+                    kmer::clean_map(unfiltered, cutoff as usize)
                 };
                 let mut ref_kmer = ref_kmer.lock().unwrap();
                 ref_kmer.insert(colors_accession[&l.0].to_owned(), kmers.len());
@@ -284,42 +301,25 @@ pub fn build_multi_bigvec_mutex(
                 }
             //(l.0, kmers)
             } else {
-                if l.1[0].ends_with("gz") {
-                    let unfiltered = kmer::kmers_from_fq_qual(l.1[0].to_owned(), k_size, 1, 15);
-                    let kmers = if cutoff == -1 {
-                        let auto_cutoff = kmer::auto_cutoff(&unfiltered);
-                        kmer::clean_map(unfiltered, auto_cutoff)
-                    } else {
-                        kmer::clean_map(unfiltered, cutoff as usize)
-                    };
-                    let mut ref_kmer = ref_kmer.lock().unwrap();
-                    ref_kmer.insert(colors_accession[&l.0].to_owned(), kmers.len());
-                    let mut bigsi = bigsi.lock().unwrap();
-                    for k in kmers.keys() {
-                        bigsi.insert(l.0 as u64, k);
-                    }
-                //(l.0, kmers)
+                let vec = kmer::read_fasta(l.1[0].to_string());
+                let kmers = if cutoff == -1 {
+                    kmer::kmerize_vector(&vec, k_size, 1)
                 } else {
-                    let vec = kmer::read_fasta(l.1[0].to_string());
-                    let kmers = if cutoff == -1 {
-                        kmer::kmerize_vector(&vec, k_size, 1)
-                    } else {
-                        let mut unfiltered = kmer::kmerize_vector(&vec, k_size, 1);
-                        let keys_for_removal =
-                            kmer::get_removal_values(&unfiltered, cutoff as usize);
-                        kmer::clean_map_inplace(&mut unfiltered, &keys_for_removal);
-                        unfiltered
-                    };
-                    let mut ref_kmer = ref_kmer.lock().unwrap();
-                    ref_kmer.insert(colors_accession[&l.0].to_owned(), kmers.len());
-                    let mut bigsi = bigsi.lock().unwrap();
-                    for k in kmers.keys() {
-                        bigsi.insert(l.0 as u64, k);
-                    }
-                    //(l.0, kmers)
+                    let mut unfiltered = kmer::kmerize_vector(&vec, k_size, 1);
+                    let keys_for_removal = kmer::get_removal_values(&unfiltered, cutoff as usize);
+                    kmer::clean_map_inplace(&mut unfiltered, &keys_for_removal);
+                    unfiltered
+                };
+                let mut ref_kmer = ref_kmer.lock().unwrap();
+                ref_kmer.insert(colors_accession[&l.0].to_owned(), kmers.len());
+                let mut bigsi = bigsi.lock().unwrap();
+                for k in kmers.keys() {
+                    bigsi.insert(l.0 as u64, k);
                 }
+                //(l.0, kmers)
             }
-        });
+        }
+    });
     eprint!("processed {}/{} accessions\r", processed, map_length);
     let mut bigsi = bigsi.into_inner().unwrap();
     bigsi.slim();

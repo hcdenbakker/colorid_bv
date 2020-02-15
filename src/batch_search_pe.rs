@@ -27,8 +27,6 @@ pub fn batch_search(
     bigsi_map: &bigsi_rs::Bigsi,
     colors_accession: &fnv::FnvHashMap<usize, String>,
     n_ref_kmers: &fnv::FnvHashMap<String, usize>,
-    bloom_size: u64,
-    num_hash: u64,
     k_size: usize,
     filter: isize,
     cov: f64,
@@ -201,9 +199,6 @@ pub fn batch_search_mf(
     files: Vec<&str>,
     bigsi_map: &bigsi_rs::Bigsi,
     colors_accession: &fnv::FnvHashMap<usize, String>,
-    n_ref_kmers: &fnv::FnvHashMap<String, usize>,
-    bloom_size: u64,
-    num_hash: u64,
     k_size: usize,
     cov: f64,
 ) {
