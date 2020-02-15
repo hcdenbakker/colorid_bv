@@ -1,5 +1,5 @@
 [package]
-name = "colorid_bigvec"
+name = "colorid_bv"
 version = "0.1.0"
 authors = ["henk"]
 edition = "2018"

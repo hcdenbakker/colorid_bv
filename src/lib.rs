@@ -24,8 +24,6 @@ pub mod batch_search_pe;
 
 pub mod kmer;
 
-//pub mod simple_bloom;
-
 pub mod reports;
 
 pub mod read_filter;

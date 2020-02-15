@@ -1,4 +1,4 @@
-extern crate colorid_bigvec as colorid;
+extern crate colorid_bv as colorid;
 extern crate rayon;
 #[macro_use]
 extern crate clap;
@@ -6,9 +6,9 @@ extern crate clap;
 use bincode::{deserialize_from, serialize};
 use clap::{App, AppSettings, Arg, SubCommand};
 //use colorid_bigvec::bi;
-use colorid_bigvec::build;
-use colorid_bigvec::read_id_mt_pe;
-use colorid_bigvec::read_id_mt_pe::false_prob;
+use colorid_bv::build;
+use colorid_bv::read_id_mt_pe;
+use colorid_bv::read_id_mt_pe::false_prob;
 use rayon::ThreadPoolBuilder;
 use std::alloc::System;
 use std::fs;
