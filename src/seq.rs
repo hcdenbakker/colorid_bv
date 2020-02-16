@@ -1,3 +1,4 @@
+#[derive(Default)]
 pub struct Fasta {
     pub id: String,  //id including >
     pub seq: String, // sequence
@@ -12,6 +13,7 @@ impl Fasta {
     }
 }
 
+#[derive(Default)]
 pub struct Fastq {
     pub id: String,    //id including >
     pub seq1: String,  // sequence 1
@@ -33,7 +35,7 @@ impl Fastq {
 }
 
 //from L. Katz fasten! make a method for Fastq
-pub fn qual_mask(seq: &String, qual: &String, max_quality_offset: u8) -> String {
+pub fn qual_mask(seq: &str, qual: &str, max_quality_offset: u8) -> String {
     if max_quality_offset == 0 {
         seq.to_string()
     } else {
@@ -63,7 +65,7 @@ pub fn is_good_base(chr: u8) -> bool {
     }
 }
 
-pub fn has_no_n<'a>(seq: &'a [u8]) -> bool {
+pub fn has_no_n(seq: &[u8]) -> bool {
     //! Determines if a sequence has any non-primary four bases
     //! characters in it
     seq.iter().all(|n| is_good_base(*n))

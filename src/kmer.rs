@@ -25,7 +25,7 @@ pub fn read_fasta(filename: String) -> Vec<String> {
         count_line += 1;
         if line.contains('>') {
             let l = sub_string.to_string();
-            if l.len() > 0 {
+            if !l.is_empty() {
                 vec.push(l);
             }
             sub_string.clear();
@@ -33,7 +33,7 @@ pub fn read_fasta(filename: String) -> Vec<String> {
             let l = line.to_string();
             sub_string.push_str(&l);
             let l = sub_string.to_string();
-            if l.len() > 0 {
+            if !l.is_empty(){
                 vec.push(l);
             }
         } else {
@@ -64,7 +64,7 @@ pub fn read_fasta_mf(filename: String) -> (Vec<String>, Vec<String>) {
         if line.contains('>') {
             labels.push(line[1..].to_owned());
             let l = sub_string.to_string();
-            if l.len() > 0 {
+            if !l.is_empty() {
                 vec.push(l);
             }
             sub_string.clear();
@@ -72,7 +72,7 @@ pub fn read_fasta_mf(filename: String) -> (Vec<String>, Vec<String>) {
             let l = line.to_string();
             sub_string.push_str(&l);
             let l = sub_string.to_string();
-            if l.len() > 0 {
+            if !l.is_empty() {
                 vec.push(l);
             }
         } else {
@@ -85,7 +85,7 @@ pub fn read_fasta_mf(filename: String) -> (Vec<String>, Vec<String>) {
 
 #[inline]
 pub fn kmerize_vector(
-    v: &Vec<String>,
+    v: &[String],
     k: usize,
     d: usize,
 ) -> fnv::FnvHashMap<std::string::String, usize> {
@@ -126,7 +126,7 @@ pub fn kmerize_vector(
 
 #[inline]
 pub fn kmerize_vector_set(
-    v: &Vec<String>,
+    v: &[String],
     k: usize,
     d: usize,
 ) -> fnv::FnvHashSet<std::string::String> {
@@ -188,7 +188,7 @@ pub fn kmerize_vector_uppercase(
 
 #[inline]
 pub fn kmerize_vector_skip_n(
-    v: &Vec<String>,
+    v: &[String],
     k: usize,
     d: usize,
 ) -> fnv::FnvHashMap<std::string::String, usize> {
@@ -219,7 +219,7 @@ pub fn kmerize_vector_skip_n(
 
 #[inline]
 pub fn kmerize_vector_skip_n_set(
-    v: &Vec<String>,
+    v: &[String],
     k: usize,
     d: usize,
 ) -> fnv::FnvHashSet<std::string::String> {
@@ -326,7 +326,7 @@ pub fn minimerize_vector(
 }
 
 pub fn minimerize_vector_skip_n(
-    v: &Vec<String>,
+    v: &[&str],
     k: usize,
     m: usize,
     d: usize,
@@ -361,7 +361,7 @@ pub fn minimerize_vector_skip_n(
 }
 
 pub fn minimerize_vector_skip_n_set(
-    v: &Vec<String>,
+    v: &[String],
     k: usize,
     m: usize,
     d: usize,
@@ -394,7 +394,7 @@ pub fn minimerize_vector_skip_n_set(
 }
 
 pub fn minimerize_vector_skip_n_set_str(
-    v: &Vec<&str>,
+    v: &[&str],
     k: usize,
     m: usize,
     d: usize,
@@ -836,7 +836,7 @@ pub fn clean_map(
     map_clean
 }
 
-pub fn clean_map_inplace(map: &mut fnv::FnvHashMap<String, usize>, keys: &Vec<String>) {
+pub fn clean_map_inplace(map: &mut fnv::FnvHashMap<String, usize>, keys: &[String]) {
     for key in keys {
         map.remove(key);
     }
@@ -855,12 +855,12 @@ pub fn get_removal_values(map: &fnv::FnvHashMap<String, usize>, t: usize) -> Vec
 pub fn revcomp(dna: &str) -> String {
     let mut rc_dna = String::with_capacity(dna.len());
     for c in dna.chars().rev() {
-        rc_dna.push(switch_base(&c))
+        rc_dna.push(switch_base(c))
     }
     rc_dna
 }
 
-fn switch_base(c: &char) -> char {
+fn switch_base(c: char) -> char {
     match c {
         'a' => 't',
         'c' => 'g',
@@ -882,7 +882,7 @@ fn switch_base(c: &char) -> char {
 pub fn auto_cutoff(map: &fnv::FnvHashMap<std::string::String, usize>) -> usize {
     let mut histo_map = fnv::FnvHashMap::default();
     let mut max_cov = 0;
-    for (_key, value) in map {
+    for value in map.values() {
         if value > &max_cov {
             max_cov = *value;
         }
@@ -988,7 +988,7 @@ pub fn find_minimizer(seq: &str, m: usize) -> String {
     let r_seq = revcomp(&seq);
     let length = seq.len();
     let mut minmer = &seq[..m];
-    for i in 1..seq.len() - m + 1 {
+    for i in 1..=seq.len() - m {
         let min_f = &seq[i..i + m];
         let min_rc = &r_seq[length - (i + m)..length - i];
         if min_f < minmer {

@@ -8,7 +8,7 @@ use std::collections::HashMap;
 use std::time::SystemTime;
 
 #[inline]
-pub fn bitwise_and(vector_of_bitvectors: &Vec<&BitVec<u64>>) -> BitVec<u64> {
+pub fn bitwise_and(vector_of_bitvectors: &[&BitVec<u64>]) -> BitVec<u64> {
     let mut first = vector_of_bitvectors[0].to_owned();
     if vector_of_bitvectors.len() == 1 {
         first
@@ -79,7 +79,7 @@ pub fn batch_search(
                         }
                     }
                     for h in &hits {
-                        let count = report.entry(h.to_string()).or_insert(0);
+                        let count = report.entry((*h).to_string()).or_insert(0);
                         *count += 1;
                     }
                     if hits.len() == 1 {
@@ -157,7 +157,7 @@ pub fn batch_search(
                         }
                     }
                     for h in &hits {
-                        let count = report.entry(h.to_string()).or_insert(0);
+                        let count = report.entry((*h).to_string()).or_insert(0);
                         *count += 1;
                     }
                     if hits.len() == 1 {
@@ -237,7 +237,7 @@ pub fn batch_search_mf(
                         }
                     }
                     for h in &hits {
-                        let count = report.entry(h.to_string()).or_insert(0);
+                        let count = report.entry((*h).to_string()).or_insert(0);
                         *count += 1;
                     }
                     if hits.len() == 1 {

@@ -102,7 +102,7 @@ pub fn read_counts_five_fields(file_name: String, prefix: &str) {
     for line in iter {
         let l = line.unwrap().to_string();
         let v: Vec<&str> = l.split('\t').collect();
-        if v[4].to_owned() == "accept" {
+        if v[4]  == "accept" {
             let count = count_map.entry(v[1].to_owned()).or_insert(0);
             *count += 1;
         } else {

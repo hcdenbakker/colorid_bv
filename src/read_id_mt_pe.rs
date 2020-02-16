@@ -40,7 +40,7 @@ pub fn false_prob_map(
 }
 
 #[inline]
-pub fn bitwise_and(vector_of_bitvectors: &Vec<&BitVec<u64>>) -> BitVec<u64> {
+pub fn bitwise_and(vector_of_bitvectors: &[&BitVec<u64>]) -> BitVec<u64> {
     let mut first = vector_of_bitvectors[0].to_owned();
     if vector_of_bitvectors.len() == 1 {
         first
@@ -72,7 +72,7 @@ pub fn bitwise_and(vector_of_bitvectors: &Vec<&BitVec>) -> BitVec {
 
 //change a vector of strings to a comma delimited string
 #[inline]
-pub fn vec_strings_to_string(vector_in: &Vec<String>) -> String {
+pub fn vec_strings_to_string(vector_in: &[String]) -> String {
     let mut comma_separated = String::new();
     for s in vector_in {
         comma_separated.push_str(&s.to_string());
@@ -131,22 +131,7 @@ pub fn search_index_bigvec(
     let mut final_report = fnv::FnvHashMap::default();
     let mut counter = 0;
     for k in map {
-        if start_sample == 0 {
-            let first = bigsi_map.get_bv(&k);
-            if first.is_empty() {
-                *final_report.entry(no_hits_num).or_insert(0) += 1;
-            } else {
-                //let first = bitwise_and(&kmer_slices);
-                //let mut color: usize = 0;
-                for item in 0..first.len() {
-                    if first[item] {
-                        report.insert(item);
-                        *final_report.entry(item as usize).or_insert(0) += 1;
-                    }
-                    //color += 1;
-                }
-            }
-        } else if counter < start_sample {
+        if start_sample == 0 || counter < start_sample{
             let first = bigsi_map.get_bv(&k);
             if first.is_empty() {
                 *final_report.entry(no_hits_num).or_insert(0) += 1;
@@ -221,15 +206,13 @@ pub fn kmer_poll_plus<'a>(
     };
     let mut significant_hits = Vec::new();
     for t in &count_vec {
-        if t.0 == &no_hits_num || t.0 == &supress_accession {
-            continue;
-        } else if not_fp_signicant(kmer_length, child_fp, fp_correct, *t.0, *t.1) {
+        if t.0 == &no_hits_num || t.0 == &supress_accession || not_fp_signicant(kmer_length, child_fp, fp_correct, *t.0, *t.1) {
             continue;
         } else {
             significant_hits.push(t.to_owned());
         }
     }
-    if significant_hits.len() == 0 {
+    if significant_hits.is_empty() {
         (
             "no_significant_hits".to_string(),
             0 as usize,
@@ -248,7 +231,7 @@ pub fn kmer_poll_plus<'a>(
         }
         if top_hits.len() == 1 {
             (
-                first_tophit.to_owned(),
+                first_tophit,
                 significant_hits[0].1.to_owned(),
                 kmer_length,
                 "accept",
@@ -266,6 +249,7 @@ pub fn kmer_poll_plus<'a>(
     }
 }
 
+#[derive(Default)]
 pub struct SeqRead {
     pub id: String,       //id including >
     pub seq: Vec<String>, // sequence
@@ -280,6 +264,7 @@ impl SeqRead {
     }
 }
 
+#[derive(Default)]
 pub struct SeqReadstr<'a> {
     pub id: &'a str,       //id including >
     pub seq: Vec<&'a str>, // sequence
@@ -296,7 +281,7 @@ impl<'a> SeqReadstr<'a> {
 
 #[allow(unused_assignments)]
 pub fn parallel_vec_bigvec(
-    vec: &Vec<(String, Vec<String>)>,
+    vec: &[(String, Vec<String>)],
     bigsi: &bigsi_rs::Bigsi,
     colors_accession: &fnv::FnvHashMap<usize, String>,
     ref_kmers_in: &fnv::FnvHashMap<String, usize>,
@@ -513,7 +498,7 @@ pub fn stream_fasta(
             fasta.id = l[..l.len() - 1].to_string();
         } else {
             if l.contains('>') {
-                if sub_string.len() > 0 {
+                if !sub_string.is_empty() {
                     fasta.seq = vec![sub_string.to_string()];
                     vec.push((fasta.id, fasta.seq));
                     fasta.id = l[..l.len() - 1].to_string();
@@ -556,7 +541,7 @@ pub fn stream_fasta(
         }
         l.clear();
     }
-    fasta.seq = vec![sub_string.to_string()];
+    fasta.seq = vec![sub_string];
     vec.push((fasta.id, fasta.seq));
     let c = parallel_vec_bigvec(
         &vec,

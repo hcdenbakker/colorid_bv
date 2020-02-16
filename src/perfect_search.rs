@@ -5,7 +5,7 @@ use bv::BitsExt;
 use fnv;
 
 #[inline]
-pub fn bitwise_and(vector_of_bitvectors: &Vec<BitVec<usize>>) -> BitVec<usize> {
+pub fn bitwise_and(vector_of_bitvectors: &[BitVec<usize>]) -> BitVec<usize> {
     let mut first = vector_of_bitvectors[0].to_owned();
     if vector_of_bitvectors.len() == 1 {
         first
@@ -31,7 +31,7 @@ pub fn batch_search(
         let vec_query = kmer::read_fasta(file.to_owned());
         let kmers_query = kmer::kmerize_vector(&vec_query, k_size, 1);
         eprintln!("{} kmers in query", kmers_query.len());
-        if kmers_query.len() == 0 {
+        if kmers_query.is_empty() {
             eprintln!("Warning! no kmers in query; maybe your kmer length is larger than your query length?");
         } else {
             let mut kmer_slices = Vec::new();
