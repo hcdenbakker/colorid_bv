@@ -1080,15 +1080,12 @@ fn main() -> std::io::Result<()> {
 
         //2. concatenate bigsis
         db_1.merge(&db_2);
-        println!("bit vector length after merge {}", db_1.bigsi[0].len());
+        eprintln!("bit vector length after merge {}", db_1.bigsi[0].len());
         db_1.slim();
         //3. merge colors
         let accessions_1 = colors_1.len();
         for (key, value) in colors_2 {
             colors_1.insert(key + accessions_1, value);
-        }
-        for (key, value) in &colors_1 {
-            eprintln!("{} {}", key, value);
         }
         //4. merge refkmers
         for (key, value) in ref_kmers_2 {
