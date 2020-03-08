@@ -159,7 +159,7 @@ pub fn read_filter_se(
         } else if line_count % 4 == 0 {
             qual1 = l.to_owned();
             let v: Vec<&str> = header1.split(' ').collect();
-            if exclude{
+            if exclude {
                 if !class_map.contains_key(v[0]) {
                     gz1.write_all(format!("{}\n{}\n+\n{}\n", header1, seq1, qual1).as_bytes())
                         .expect("Could not write forward read(-s) to file");
@@ -176,7 +176,7 @@ pub fn read_filter_se(
         line_count += 1;
     }
     gz1.finish().expect("Could not close new read file");
-    if exclude{
+    if exclude {
         eprintln!(
             "Excluded {} read pairs  with classification containing '{}' from output files",
             excluded, query

@@ -131,7 +131,7 @@ pub fn search_index_bigvec(
     let mut final_report = fnv::FnvHashMap::default();
     let mut counter = 0;
     for k in map {
-        if start_sample == 0 || counter < start_sample{
+        if start_sample == 0 || counter < start_sample {
             let first = bigsi_map.get_bv(&k);
             if first.is_empty() {
                 *final_report.entry(no_hits_num).or_insert(0) += 1;
@@ -206,7 +206,10 @@ pub fn kmer_poll_plus<'a>(
     };
     let mut significant_hits = Vec::new();
     for t in &count_vec {
-        if t.0 == &no_hits_num || t.0 == &supress_accession || not_fp_signicant(kmer_length, child_fp, fp_correct, *t.0, *t.1) {
+        if t.0 == &no_hits_num
+            || t.0 == &supress_accession
+            || not_fp_signicant(kmer_length, child_fp, fp_correct, *t.0, *t.1)
+        {
             continue;
         } else {
             significant_hits.push(t.to_owned());

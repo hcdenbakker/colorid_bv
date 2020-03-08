@@ -33,7 +33,7 @@ pub fn read_fasta(filename: String) -> Vec<String> {
             let l = line.to_string();
             sub_string.push_str(&l);
             let l = sub_string.to_string();
-            if !l.is_empty(){
+            if !l.is_empty() {
                 vec.push(l);
             }
         } else {

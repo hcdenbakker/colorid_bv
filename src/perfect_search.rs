@@ -24,13 +24,18 @@ pub fn batch_search(
     colors_accession: &fnv::FnvHashMap<usize, String>,
     k_size: usize,
     _cov: f64,
+    verbose: bool,
 ) {
     for file in files {
         //only fasta formatted file!
-        eprintln!("Counting k-mers, this may take a while!");
+        if verbose {
+            eprintln!("Counting k-mers, this may take a while!");
+        }
         let vec_query = kmer::read_fasta(file.to_owned());
         let kmers_query = kmer::kmerize_vector(&vec_query, k_size, 1);
-        eprintln!("{} kmers in query", kmers_query.len());
+        if verbose {
+            eprintln!("{} kmers in query", kmers_query.len());
+        }
         if kmers_query.is_empty() {
             eprintln!("Warning! no kmers in query; maybe your kmer length is larger than your query length?");
         } else {
@@ -44,7 +49,9 @@ pub fn batch_search(
                 }
             }
             if kmer_slices.len() < kmers_query.len() {
-                eprintln!("No perfect hits!");
+                if verbose {
+                    eprintln!("No perfect hits!");
+                }
             } else {
                 //bit-wise AND
                 let first = bitwise_and(&kmer_slices);
@@ -54,7 +61,9 @@ pub fn batch_search(
                         hits.push(&colors_accession[&(i as usize)]);
                     }
                 }
-                eprintln!("{} hits", hits.len());
+                if verbose {
+                    eprintln!("{} hits", hits.len());
+                }
                 for h in &hits {
                     println!("{}\t{}\t{}\t1.00", file, h, kmers_query.len());
                 }
@@ -69,6 +78,7 @@ pub fn batch_search_mf(
     colors_accession: &fnv::FnvHashMap<usize, String>,
     k_size: usize,
     _cov: f64,
+    verbose: bool,
 ) {
     for file in files {
         let (labels, sequences) = super::kmer::read_fasta_mf(file.to_owned());
@@ -80,7 +90,10 @@ pub fn batch_search_mf(
             match kmers{
                 None    => println!("Warning! no kmers in query '{}'; maybe your kmer length is larger than your query length?", label),
                 Some(kmers_query) =>
-                {eprintln!("{} kmers in query", kmers_query.len());
+                {
+                    if verbose{
+                    eprintln!("{} kmers in query", kmers_query.len());
+                    }
                 let mut kmer_slices = Vec::new();
                 for k in kmers_query.keys() {
                 let bitvec = bigsi_map.get_bv(&k);
@@ -91,7 +104,9 @@ pub fn batch_search_mf(
                     }
                 }
                 if kmer_slices.len() < kmers_query.len() {
+                    if verbose{
                     eprintln!("No perfect hits!");
+                    }
                 } else {
                     //bit-wise AND
                     let first = bitwise_and(&kmer_slices);
@@ -101,7 +116,9 @@ pub fn batch_search_mf(
                             hits.push(&colors_accession[&(i as usize)]);
                         }
                     }
+                    if verbose{
                     eprintln!("{} hits", hits.len());
+                    }
                     for h in &hits {
                         println!("{}\t{}\t{}\t1.00", label.to_string(), h, kmers_query.len());
                     }

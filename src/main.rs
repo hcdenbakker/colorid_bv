@@ -21,10 +21,10 @@ use std::time::SystemTime;
 static GLOBAL: System = System;
 
 fn main() -> std::io::Result<()> {
-    let matches = App::new("colorid")
-        .version("0.1.4.2")
+    let matches = App::new("colorid_bv")
+        .version("0.1.0")
         .author("Henk C. den Bakker <henkcdenbakker@gmail.com>")
-        .about("BIGSI based taxonomic ID of sequence data")
+        .about("gene search and read classification using a BIGSI-like data structure")
         .setting(AppSettings::ArgRequiredElseHelp)
         .subcommand(
             SubCommand::with_name("build")
@@ -193,6 +193,14 @@ fn main() -> std::io::Result<()> {
                         .short("s")
                         .takes_value(false)
                         .long("perfect_search"),
+                )
+                .arg(
+                    Arg::with_name("verbose")
+                        .help("If ('-v') the output will be verbose!")
+                        .required(false)
+                        .short("v")
+                        .takes_value(false)
+                        .long("verbose"),
                 )
                 .arg(
                     Arg::with_name("multi_fasta")
@@ -645,6 +653,7 @@ fn main() -> std::io::Result<()> {
         let cov = value_t!(matches, "shared_kmers", f64).unwrap_or(0.35);
         let gene_search = matches.is_present("gene_search");
         let perfect_search = matches.is_present("perfect_search");
+        let verbose = matches.is_present("verbose");
         let multi_fasta = matches.is_present("multi_fasta");
         let quality = value_t!(matches, "quality", u8).unwrap_or(15);
         let index = matches.value_of("bigsi").unwrap();
@@ -700,6 +709,7 @@ fn main() -> std::io::Result<()> {
                         &colors,
                         parameters.k_size,
                         cov,
+                        verbose,
                     )
                 } else {
                     colorid::perfect_search::batch_search(
@@ -708,11 +718,11 @@ fn main() -> std::io::Result<()> {
                         &colors,
                         parameters.k_size,
                         cov,
+                        verbose,
                     )
                 }
             } else {
                 if multi_fasta {
-                    //make 'perfect' batch....
                     colorid::batch_search_pe::batch_search_mf(
                         files1,
                         &db,
@@ -760,7 +770,8 @@ fn main() -> std::io::Result<()> {
         let mut reader = BufReader::new(
             File::open(&(index.to_owned() + "/ref_kmers")).expect("Can't open parameters!"),
         );
-        let ref_kmers: fnv::FnvHashMap<String, usize> = deserialize_from(&mut reader).expect("can't deserialize");
+        let ref_kmers: fnv::FnvHashMap<String, usize> =
+            deserialize_from(&mut reader).expect("can't deserialize");
         match bigsi_time.elapsed() {
             Ok(elapsed) => {
                 eprintln!("Index loaded in {} seconds", elapsed.as_secs());
