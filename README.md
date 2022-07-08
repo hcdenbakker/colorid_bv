@@ -25,3 +25,11 @@ colorid_bv build -b $db -s 30000000 -n 2 -k 31 -t 12 -r $fofn
 ```bash
 colorid_bv search -b $db -q $cgMLST -ms > alleles.txt
 ```
+
+## post processing
+
+Generates a bunch of reports and allele files, including the percentage of alleles not called or called with multiple alleles.
+
+```bash
+process_MLST.py alleles.txt colorid_
+```
