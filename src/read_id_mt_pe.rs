@@ -2,7 +2,7 @@ use super::kmer;
 use super::seq;
 use bv::BitVec;
 use bv::*;
-use fasthash;
+use xxh3;
 use flate2::read::MultiGzDecoder;
 use fnv;
 use itertools::Itertools;
@@ -95,7 +95,7 @@ pub fn search_index_classic(
         let mut kmer_slices = Vec::new();
         for i in 0..num_hash {
             let bit_index =
-                fasthash::xx::hash64_with_seed(&k.as_bytes(), i as u64) % bloom_size as u64;
+                xxh3::hash64_with_seed(&k.as_bytes(), i as u64) % bloom_size as u64;
             //let bi = bit_index as usize;
             if !bigsi_map.contains_key(&bit_index) || bigsi_map[&bit_index] == empty_bitvec {
                 break;
