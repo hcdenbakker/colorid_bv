@@ -1,7 +1,7 @@
 extern crate bigsi_rs;
 extern crate bincode;
 extern crate bv;
-extern crate fasthash;
+extern crate xxh3;
 extern crate flate2;
 extern crate fnv;
 extern crate probability;

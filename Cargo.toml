@@ -8,7 +8,7 @@ edition = "2018"
 
 [dependencies]
 clap = "^2.30.0"
-fasthash = "0.3.2"
+xxh3 = "0.1.1"
 serde = "^1.0.89"
 serde_json = "1.0.9"
 bincode = "^1.1.2"
