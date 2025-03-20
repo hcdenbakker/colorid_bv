@@ -14,7 +14,7 @@ pub fn bitwise_and(vector_of_bitvectors: &[&BitVec<u64>]) -> BitVec<u64> {
         first
     } else {
         for i in 1..vector_of_bitvectors.len() {
-            let j = i as usize;
+            let j = i;
             first = first.bit_and(vector_of_bitvectors[j]).to_bit_vec();
         }
         first
@@ -35,20 +35,26 @@ pub fn batch_search(
 ) {
     for (i, file1) in files1.iter().enumerate() {
         if file1.ends_with("gz") {
-            let unfiltered = if files2.len() == 0 {
+            let mut kmers_query = if files2.is_empty() {
                 eprintln!("{}", file1);
                 eprintln!("Counting k-mers, this may take a while!");
+                //kmer::kmers_from_fq_qual_needletail(file1.to_owned().to_string(), k_size, qual_offset)
                 kmer::kmers_from_fq_qual(file1.to_owned().to_string(), k_size, 1, qual_offset)
             } else {
                 eprintln!("Paired end: {} {}", file1, files2[i]);
                 eprintln!("Counting k-mers, this may take a while!");
                 kmer::kmers_fq_pe_qual(vec![&file1, &files2[i]], k_size, 1, qual_offset)
             };
-            let kmers_query = if filter < 0 {
-                let cutoff = kmer::auto_cutoff(&unfiltered);
-                kmer::clean_map(unfiltered, cutoff)
+            //let kmers_query = if filter < 0 {
+            if filter < 0 {
+                let cutoff = kmer::auto_cutoff(&kmers_query);
+                //kmer::clean_map(unfiltered, cutoff)
+                let keys_for_removal = kmer::get_removal_values(&kmers_query, cutoff as usize);
+                kmer::clean_map_inplace(&mut kmers_query, &keys_for_removal)
             } else {
-                kmer::clean_map(unfiltered, filter as usize)
+                //kmer::clean_map(unfiltered, filter as usize)
+                let keys_for_removal = kmer::get_removal_values(&kmers_query, filter as usize);
+                kmer::clean_map_inplace(&mut kmers_query, &keys_for_removal)
             };
             let num_kmers = kmers_query.len() as f64;
             eprintln!("{} k-mers in query", num_kmers);
@@ -56,7 +62,7 @@ pub fn batch_search(
             let mut report = HashMap::new();
             let mut uniq_freqs = HashMap::new();
             for k in kmers_query.keys() {
-                let bitvec = bigsi_map.get_bv(&k);
+                let bitvec = bigsi_map.get_bv(k);
                 /*let mut kmer_slices = Vec::new();
                 for i in 0..num_hash {
                     let bit_index =
@@ -106,7 +112,7 @@ pub fn batch_search(
                     file1,
                     report,
                     &uniq_freqs,
-                    &n_ref_kmers,
+                    n_ref_kmers,
                     num_kmers as usize,
                     cov,
                 );
@@ -134,7 +140,7 @@ pub fn batch_search(
             let mut uniq_freqs = HashMap::new();
             let bigsi_search = SystemTime::now();
             for k in kmers_query.keys() {
-                let bitvec = bigsi_map.get_bv(&k);
+                let bitvec = bigsi_map.get_bv(k);
                 /*let mut kmer_slices = Vec::new();
                 for i in 0..num_hash {
                     let bit_index =
@@ -184,7 +190,7 @@ pub fn batch_search(
                     file1,
                     report,
                     &uniq_freqs,
-                    &n_ref_kmers,
+                    n_ref_kmers,
                     num_kmers as usize,
                     cov,
                 );
@@ -214,7 +220,7 @@ pub fn batch_search_mf(
             let mut report = HashMap::new();
             let mut uniq_freqs = HashMap::new();
             for k in kmers_query.keys() {
-                let bitvec = bigsi_map.get_bv(&k);
+                let bitvec = bigsi_map.get_bv(k);
                 /*let mut kmer_slices = Vec::new();
                 for i in 0..num_hash {
                     let bit_index =
