@@ -721,29 +721,27 @@ fn main() -> std::io::Result<()> {
                         verbose,
                     )
                 }
+            } else if multi_fasta {
+                colorid::batch_search_pe::batch_search_mf(
+                    files1,
+                    &db,
+                    &colors,
+                    parameters.k_size,
+                    cov,
+                )
             } else {
-                if multi_fasta {
-                    colorid::batch_search_pe::batch_search_mf(
-                        files1,
-                        &db,
-                        &colors,
-                        parameters.k_size,
-                        cov,
-                    )
-                } else {
-                    colorid::batch_search_pe::batch_search(
-                        files1,
-                        files2,
-                        &db,
-                        &colors,
-                        &ref_kmers,
-                        parameters.k_size,
-                        filter,
-                        cov,
-                        gene_search,
-                        quality,
-                    )
-                }
+                colorid::batch_search_pe::batch_search(
+                    files1,
+                    files2,
+                    &db,
+                    &colors,
+                    &ref_kmers,
+                    parameters.k_size,
+                    filter,
+                    cov,
+                    gene_search,
+                    quality,
+                )
             }
         }
     }
