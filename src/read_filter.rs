@@ -36,8 +36,8 @@ pub fn read_filter_pe(
 ) {
     let query_cleaned = query.replace(" ", "_");
     let mut line_count = 1;
-    let f = File::open(&filenames[0]).expect("file not found");
-    let f2 = File::open(&filenames[1]).expect("file not found");
+    let f = File::open(filenames[0]).expect("file not found");
+    let f2 = File::open(filenames[1]).expect("file not found");
     let d1 = MultiGzDecoder::new(f);
     let d2 = MultiGzDecoder::new(f2);
     let iter1 = io::BufReader::new(d1).lines();
@@ -94,8 +94,7 @@ pub fn read_filter_pe(
                             .expect("could not write R2!");
                             excluded += 1;
                         }
-                    } else {
-                        if class_map.contains_key(v[0]) {
+                    } else if class_map.contains_key(v[0]) {
                             gz1.write_all(
                                 format!("{}\n{}\n+\n{}\n", header1, seq1, qual1).as_bytes(),
                             )
@@ -106,7 +105,6 @@ pub fn read_filter_pe(
                             .expect("could not write R2!");
                             included += 1;
                         }
-                    }
                 }
                 None => break,
             };
@@ -139,7 +137,7 @@ pub fn read_filter_se(
 ) {
     let query_cleaned = query.replace(" ", "_");
     let mut line_count = 1;
-    let f = File::open(&filenames[0]).expect("file not found");
+    let f = File::open(filenames[0]).expect("file not found");
     let d1 = MultiGzDecoder::new(f);
     let iter1 = io::BufReader::new(d1).lines();
     let mut header1 = "".to_string();
@@ -165,13 +163,11 @@ pub fn read_filter_se(
                         .expect("Could not write forward read(-s) to file");
                     excluded += 1;
                 }
-            } else {
-                if class_map.contains_key(v[0]) {
+            } else if class_map.contains_key(v[0]) {
                     gz1.write_all(format!("{}\n{}\n+\n{}\n", header1, seq1, qual1).as_bytes())
                         .expect("Could not write reverse read(-s) to file");
                     included += 1;
                 }
-            }
         }
         line_count += 1;
     }
