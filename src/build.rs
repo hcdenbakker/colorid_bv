@@ -64,7 +64,7 @@ pub fn build_multi_mini_bigvec(
     let mut color = 0;
     let mut processed = 0;
     for accession in map.keys() {
-        colors_accession.insert(color as usize, accession.to_owned()); //insert color, accession
+        colors_accession.insert(color, accession.to_owned()); //insert color, accession
         accession_colors.insert(accession, color); //insert accession, color
         color += 1; //color+= 1
     }
@@ -153,7 +153,7 @@ pub fn build_multi_bigvec_mutex(
     let mut color = 0;
     let mut processed = 0;
     for accession in map.keys() {
-        colors_accession.insert(color as usize, accession.to_owned()); //insert color, accession
+        colors_accession.insert(color, accession.to_owned()); //insert color, accession
         accession_colors.insert(accession, color); //insert accession, color
         color += 1; //color+= 1
     }
@@ -195,8 +195,7 @@ pub fn build_multi_bigvec_mutex(
                         bigsi.insert(l.0 as u64, k);
                     }
                 //(l.0, kmers)
-                } else {
-                    if l.1[0].ends_with("gz") {
+                } else if l.1[0].ends_with("gz") {
                         let mut unfiltered =
                             kmer::kmers_from_fq_qual(l.1[0].to_owned(), k_size, 1, 15);
                         let kmers = if cutoff == -1 {
@@ -240,7 +239,6 @@ pub fn build_multi_bigvec_mutex(
                         }
                         //(l.0, kmers)
                     }
-                }
             });
             //single threat
             /*
@@ -284,8 +282,7 @@ pub fn build_multi_bigvec_mutex(
                 bigsi.insert(l.0 as u64, k);
             }
         //(l.0, kmers)
-        } else {
-            if l.1[0].ends_with("gz") {
+        } else if l.1[0].ends_with("gz") {
                 let unfiltered = kmer::kmers_from_fq_qual(l.1[0].to_owned(), k_size, 1, 15);
                 let kmers = if cutoff == -1 {
                     let auto_cutoff = kmer::auto_cutoff(&unfiltered);
@@ -318,7 +315,6 @@ pub fn build_multi_bigvec_mutex(
                 }
                 //(l.0, kmers)
             }
-        }
     });
     eprint!("processed {}/{} accessions\r", processed, map_length);
     let mut bigsi = bigsi.into_inner().unwrap();
