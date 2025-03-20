@@ -33,7 +33,7 @@ impl Fastq {
         }
     }
 }
-
+/*
 //from L. Katz fasten! make a method for Fastq
 pub fn qual_mask(seq: &str, qual: &str, max_quality_offset: u8) -> String {
     if max_quality_offset == 0 {
@@ -55,14 +55,30 @@ pub fn qual_mask(seq: &str, qual: &str, max_quality_offset: u8) -> String {
         }
         new_seq
     }
+}*/
+
+#[inline]
+pub fn qual_mask(seq: &str, qual: &str, max_quality_offset: u8) -> String {
+    if max_quality_offset == 0 {
+        seq.to_owned()
+    } else {
+        let max_quality: u8 = max_quality_offset + 33;
+        seq.chars()
+            .zip(qual.chars())
+            .map(|(base, qual)| {
+                if (qual as u8) < max_quality {
+                    'N'
+                } else {
+                    base.to_owned()
+                }
+            })
+            .collect()
+    }
 }
 
-//from needletail https://github.com/onecodex/needletail/blob/master/src/kmer.rs
+//original from needletail https://github.com/onecodex/needletail/blob/master/src/kmer.rs
 pub fn is_good_base(chr: u8) -> bool {
-    match chr as char {
-        'a' | 'c' | 'g' | 't' | 'A' | 'C' | 'G' | 'T' => true,
-        _ => false,
-    }
+    matches!(chr as char, 'a' | 'c' | 'g' | 't' | 'A' | 'C' | 'G' | 'T')
 }
 
 pub fn has_no_n(seq: &[u8]) -> bool {
