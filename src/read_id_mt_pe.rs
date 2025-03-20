@@ -2,7 +2,6 @@ use super::kmer;
 use super::seq;
 use bv::BitVec;
 use bv::*;
-use fasthash;
 use flate2::read::MultiGzDecoder;
 use fnv;
 use itertools::Itertools;
@@ -46,7 +45,7 @@ pub fn bitwise_and(vector_of_bitvectors: &[&BitVec<u64>]) -> BitVec<u64> {
         first
     } else {
         for i in 1..vector_of_bitvectors.len() {
-            let j = i as usize;
+            let j = i;
             first = first.bit_and(&vector_of_bitvectors[j]).to_bit_vec();
         }
         first
@@ -70,6 +69,7 @@ pub fn bitwise_and(vector_of_bitvectors: &Vec<&BitVec>) -> BitVec {
     }
 }*/
 
+
 //change a vector of strings to a comma delimited string
 #[inline]
 pub fn vec_strings_to_string(vector_in: &[String]) -> String {
@@ -82,6 +82,7 @@ pub fn vec_strings_to_string(vector_in: &[String]) -> String {
     comma_separated
 }
 
+/*
 pub fn search_index_classic(
     bigsi_map: &fnv::FnvHashMap<u64, BitVec<u64>>,
     map: &fnv::FnvHashSet<std::string::String>,
@@ -95,7 +96,7 @@ pub fn search_index_classic(
         let mut kmer_slices = Vec::new();
         for i in 0..num_hash {
             let bit_index =
-                fasthash::xx::hash64_with_seed(&k.as_bytes(), i as u64) % bloom_size as u64;
+                fasthash::xx::hash64_with_seed(&k.as_bytes(), i) % bloom_size;
             //let bi = bit_index as usize;
             if !bigsi_map.contains_key(&bit_index) || bigsi_map[&bit_index] == empty_bitvec {
                 break;
@@ -118,7 +119,7 @@ pub fn search_index_classic(
         }
     }
     report
-}
+}*/
 
 #[inline]
 pub fn search_index_bigvec(
@@ -132,7 +133,7 @@ pub fn search_index_bigvec(
     let mut counter = 0;
     for k in map {
         if start_sample == 0 || counter < start_sample {
-            let first = bigsi_map.get_bv(&k);
+            let first = bigsi_map.get_bv(k);
             if first.is_empty() {
                 *final_report.entry(no_hits_num).or_insert(0) += 1;
             } else {
@@ -147,7 +148,7 @@ pub fn search_index_bigvec(
                 }
             }
         } else {
-            let first = bigsi_map.get_bv(&k);
+            let first = bigsi_map.get_bv(k);
             if first.is_empty() {
                 *final_report.entry(no_hits_num).or_insert(0) += 1;
                 break;
@@ -198,10 +199,10 @@ pub fn kmer_poll_plus<'a>(
     if (count_vec[0].0 == &no_hits_num) && (count_vec.len() == 1) {
         return (
             "no_hits".to_string(),
-            0 as usize,
+            0_usize,
             kmer_length,
             "accept",
-            0 as usize,
+            0_usize,
         );
     };
     let mut significant_hits = Vec::new();
@@ -218,18 +219,18 @@ pub fn kmer_poll_plus<'a>(
     if significant_hits.is_empty() {
         (
             "no_significant_hits".to_string(),
-            0 as usize,
+            0_usize,
             kmer_length,
             "reject",
-            0 as usize,
+            0_usize,
         )
     } else {
         //significant_hits.sort_by(|a, b| b.1.cmp(a.1));
-        let first_tophit = colors_accession[&significant_hits[0].0].to_owned();
+        let first_tophit = colors_accession[significant_hits[0].0].to_owned();
         let mut top_hits = Vec::new();
         for h in &significant_hits {
             if h.1 == significant_hits[0].1 {
-                top_hits.push(colors_accession[&h.0].to_owned())
+                top_hits.push(colors_accession[h.0].to_owned())
             }
         }
         if top_hits.len() == 1 {
@@ -311,10 +312,10 @@ pub fn parallel_vec_bigvec(
                 (
                     r.0.to_owned(),
                     "too_short".to_string(),
-                    0 as usize,
-                    0 as usize,
+                    0_usize,
+                    0_usize,
                     "accept".to_string(),
-                    0 as usize,
+                    0_usize,
                 )
             } else {
                 let map = if m == 0 {
@@ -336,16 +337,16 @@ pub fn parallel_vec_bigvec(
                     (
                         r.0.to_owned(),
                         "no_hits".to_string(),
-                        0 as usize,
+                        0_usize,
                         map.len(),
                         "accept".to_string(),
-                        0 as usize,
+                        0_usize,
                     )
                 } else {
                     let classification = kmer_poll_plus(
                         &report,
                         map.len(),
-                        &colors_accession,
+                        colors_accession,
                         &child_fp,
                         no_hits_num,
                         fp_correct,
@@ -499,8 +500,7 @@ pub fn stream_fasta(
         //let l = line.unwrap();
         if count == 0 {
             fasta.id = l[..l.len() - 1].to_string();
-        } else {
-            if l.contains('>') {
+        } else if l.contains('>') {
                 if !sub_string.is_empty() {
                     fasta.seq = vec![sub_string.to_string()];
                     vec.push((fasta.id, fasta.seq));
@@ -510,7 +510,6 @@ pub fn stream_fasta(
             } else {
                 sub_string.push_str(&l);
             }
-        }
         count += 1;
         if vec.len() % b == 0 {
             let c = parallel_vec_bigvec(
@@ -755,8 +754,8 @@ pub fn per_read_stream_pe_itertools(
     let mut vec = Vec::with_capacity(b);
     let mut file =
         File::create(format!("{}_reads.txt", prefix)).expect("could not create outfile!");
-    let f1 = File::open(&filenames[0]).expect("file not found");
-    let f2 = File::open(&filenames[1]).expect("file not found");
+    let f1 = File::open(filenames[0]).expect("file not found");
+    let f2 = File::open(filenames[1]).expect("file not found");
     let d1 = MultiGzDecoder::new(f1);
     let d2 = MultiGzDecoder::new(f2);
     let iter1 = BufReader::new(d1).lines().chunks(b * 4);
@@ -863,7 +862,7 @@ pub fn per_read_stream_se(
         File::create(format!("{}_reads.txt", prefix)).expect("could not create outfile!");
     let batch = b * 4;
     let _num_files = filenames.len();
-    let f = File::open(&filenames[0]).expect("file not found");
+    let f = File::open(filenames[0]).expect("file not found");
     let d1 = MultiGzDecoder::new(f);
     let iter1 = io::BufReader::new(d1).lines();
     let mut fastq = seq::Fastq::new();
