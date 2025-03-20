@@ -11,7 +11,7 @@ pub fn bitwise_and(vector_of_bitvectors: &[BitVec<usize>]) -> BitVec<usize> {
         first
     } else {
         for i in 1..vector_of_bitvectors.len() {
-            let j = i as usize;
+            let j = i;
             first = first.bit_and(&vector_of_bitvectors[j]).to_bit_vec();
         }
         first
@@ -41,7 +41,7 @@ pub fn batch_search(
         } else {
             let mut kmer_slices = Vec::new();
             for k in kmers_query.keys() {
-                let bitvec = bigsi_map.get_bv(&k);
+                let bitvec = bigsi_map.get_bv(k);
                 if bitvec.is_empty() {
                     break;
                 } else {
@@ -96,7 +96,7 @@ pub fn batch_search_mf(
                     }
                 let mut kmer_slices = Vec::new();
                 for k in kmers_query.keys() {
-                let bitvec = bigsi_map.get_bv(&k);
+                let bitvec = bigsi_map.get_bv(k);
                 if bitvec.is_empty(){
                     break;
                     } else {
@@ -120,7 +120,7 @@ pub fn batch_search_mf(
                     eprintln!("{} hits", hits.len());
                     }
                     for h in &hits {
-                        println!("{}\t{}\t{}\t1.00", label.to_string(), h, kmers_query.len());
+                        println!("{}\t{}\t{}\t1.00", label, h, kmers_query.len());
                     }
                 }
                 },
