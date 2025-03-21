@@ -52,13 +52,23 @@ SUBCOMMANDS:
 
 Infer k-mer similarity between a query fasta/fastq.gz file and an index of reference sequences with the `search` subcommand:
 ```
--b, --bigsi=[FILE] 'Sets the name of the index file for search'
--q, --query      'one or more fastq.gz formatted files to be queried'
--f, --filter     'Sets threshold to filter k-mers by frequency'
--p, --p_shared        'minimum proportion of kmers shared with reference'
--c, --compressed 'If set to 'true', will assume compressed index (default: false)'
--g, If set('-g'), the proportion of kmers from the query matching the entries in the index will be reported'
--s, If set('-s'), the 'speedy' 'perfect match' alforithm will be performed'
+FLAGS:
+    -g, --gene_search       If set('-g'), the proportion of kmers from the query matching the entries in the index will
+                            be reported
+    -h, --help              Prints help information
+    -m, --multi_fasta       If set('-m'), each accession in a multifasta will betreated as a separate query, currently
+                            only with the -s option
+    -s, --perfect_search    If ('-s') is set, the fast 'perfect match' algorithm will be used
+    -V, --version           Prints version information
+    -v, --verbose           If ('-v') the output will be verbose!
+
+OPTIONS:
+    -b, --bigsi <bigsi>              Sets the name of the index file for search
+    -f, --filter <filter>            set minimum k-mer frequency 
+    -Q, --quality <quality>          minimum phred score to keep basepairs within read (default 15)
+    -q, --query <query>              query file(-s)fastq.gz
+    -r, --reverse <reverse>          reverse file(-s)fastq.gz [default: none]
+    -p, --p_shared <shared_kmers>    set minimum proportion of shared k-mers with a reference
 ```
 
 ### 1. Create index
