@@ -73,13 +73,13 @@ OPTIONS:
 
 ### 1. Create index
 
-``` ./target/release/colorid build -r ref_file_example.txt -b test -k 31 -s 50000000 -n 4```
+``` ./target/release/colorid_bv build -r ref_file_example.txt -b test -k 31 -s 50000000 -n 4```
 
 Note! These parameters work well for single isolate, mixed samples with a few species. For complex metagenomic samples the BIGSI parameters need to be adjusted to adjust the false positive rate.
 
 ### 2. Search
 
-``` ./target/release/colorid search -b test.bxi -q SRR4098796_1.fastq.gz -r SRR4098796_2.fastq.gz ```
+``` ./target/release/colorid_bv search -b test.bxi -q SRR4098796_1.fastq.gz -r SRR4098796_2.fastq.gz ```
 
 ### 3. results
 With the default settings `colorid` will report reference sequences that share >35% of their k-mers with the query (more about this threshold to follow later). Here is the output of a search with SRA accession SRR4098796 (L. monocytogenes lineage I) as query:
@@ -102,16 +102,16 @@ First we need to make a 'reference file' for the files we want to query. I like 
 
 Next we create an index of the unassembled genome data. Given the fact our query size will be relatively small, we can use much stringent parameters for the index:
 
-``` ./target/release/colorid build -r example.txt -b 30M_2H_K21.bxi -k 21 -s 30000000 -n 2```
+``` ./target/release/colorid_bv build -r example.txt -b 30M_2H_K21.bxi -k 21 -s 30000000 -n 2```
 
 This will perform a single threaded build of the index. If you want to speed up the build, you can use the `-t` flag to run it in multithreaded mode: 
 
-``` ./target/release/colorid build -r example.txt -b 30M_2H_K21.bxi -k 21 -s 30000000 -n 2 -t 24```
+``` ./target/release/colorid_bv build -r example.txt -b 30M_2H_K21.bxi -k 21 -s 30000000 -n 2 -t 24```
 This command will perform a build in 24 threads.
 
 Now it is time for the search!
 
-``` ./target/release/colorid search -b 30M_2H_K21.bxi -q geneX.fasta -g ```
+``` ./target/release/colorid_bv search -b 30M_2H_K21.bxi -q geneX.fasta -g ```
 
 When we use this subcommand we get results presented as follows:
 ```
@@ -154,13 +154,13 @@ OPTIONS:
 ### 1. Create index
 
 Use a index you created previously based on k-mers:
-```./target/release/colorid build -r ref_file_example.txt -b test -k 31 -s 50000000 -n 4```
+```./target/release/colorid_bv build -r ref_file_example.txt -b test -k 31 -s 50000000 -n 4```
 Or build a much smaller (and thus more compute efficient) index based on minimizers:
-```./target/release/colorid build -r ref_file_example.txt -b test -k 27 -mv 21 -s 50000000 -n 4```
+```./target/release/colorid_bv build -r ref_file_example.txt -b test -k 27 -mv 21 -s 50000000 -n 4```
 
 ### 2. Classify reads
 
-```./target/release/colorid read_id -b test.mxi -q your_reads_forward.fastq.gz your_reads_reverse.fastq.gz -n your_reads```
+```./target/release/colorid_bv read_id -b test.mxi -q your_reads_forward.fastq.gz your_reads_reverse.fastq.gz -n your_reads```
 
 This will classify your reads using the minimizer index (indicated by the .mxi extension) and default parameters. You can speed up the classifier by using less kmers/minimizers per read as input using the `-d` flag, e.g., `-d 10` will use every 10th k-mer as input for the classifier. The `-n` flag indicates the prefix that is used for your output. The output consists of 2 files a `PREFIX_reads.txt` file and a `PREFIX_counts.txt` file. The `PREFIX_reads.txt` will give the results of the classifier per read(-pair):
 ```
@@ -190,7 +190,7 @@ Subdoligranulum_variabile	13333
 The `read_filter` subcommand can be used to create files that either consist of a single taxon, or which have a single taxon excluded:
 
 ```USAGE:
-    colorid read_filter [FLAGS] --classification <classification> --files <files> --prefix <prefix> --taxon <taxon>
+    colorid_bv read_filter [FLAGS] --classification <classification> --files <files> --prefix <prefix> --taxon <taxon>
 
 FLAGS:
     -e, --exclude    If set('-e or --exclude'), reads for which the classification contains the taxon name will be
@@ -206,7 +206,7 @@ OPTIONS:
     -t, --taxon <taxon>                      taxon to be in- or excluded from the read file(-s)
 ```
 Here is an example:
-```./target/release/colorid read_filter -c PREFIX_reads.txt -f your_reads_forward.fastq.gz your_reads_reverse.fastq.gz -p your_reads -t Dorea```
+```./target/release/colorid_bv read_filter -c PREFIX_reads.txt -f your_reads_forward.fastq.gz your_reads_reverse.fastq.gz -p your_reads -t Dorea```
 
 This will generate a set of paired-end files(`your_reads_Dorea_1.fq.gz, your_reads_Dorea_2.fq.gz`) containing reads with a classification containing `Dorea`. If the `-e` flag is added, the files will consist of all reads, except those that contain `Dorea` in the classification. The current version of the read_filter command does only work with 'accepted' read(-pairs). 
 
