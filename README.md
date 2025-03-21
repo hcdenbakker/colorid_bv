@@ -1,4 +1,4 @@
-# colorid_bv
+# colorid_bv (in progress)
 Colorid using a new BIGSI implementation
 
 ## Download a precompiled binary (TODO)
