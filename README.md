@@ -36,12 +36,14 @@ FLAGS:
     -V, --version    Prints version information
 
 SUBCOMMANDS:
+    batch_id       classifies batch of samples reads
     build          builds a bigsi
     help           Prints this message or the help of the given subcommand(s)
     info           dumps index parameters and accessions
+    merge          merges (concatenates) indices
     read_filter    filters reads
     read_id        id's reads
-    search         does a bigsi search on one or more fasta/fastq.gz file
+    search         does a bigsi search on one or more fasta/fastq.gz files
 ```
 
 # Example uses:
