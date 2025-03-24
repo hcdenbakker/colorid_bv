@@ -102,16 +102,16 @@ First we need to make a 'reference file' for the files we want to query. I like 
 
 Next we create an index of the unassembled genome data. Given the fact our query size will be relatively small, we can use much stringent parameters for the index:
 
-``` ./target/release/colorid_bv build -r example.txt -b 30M_2H_K21.bxi -k 21 -s 30000000 -n 2```
+``` ./target/release/colorid_bv build -r example.txt -b 30M_2H_K21 -k 21 -s 30000000 -n 2 -c 4```
 
 This will perform a single threaded build of the index. If you want to speed up the build, you can use the `-t` flag to run it in multithreaded mode: 
 
-``` ./target/release/colorid_bv build -r example.txt -b 30M_2H_K21.bxi -k 21 -s 30000000 -n 2 -t 24```
+``` ./target/release/colorid_bv build -r example.txt -b 30M_2H_K21.bxi -k 21 -s 30000000 -n 2 -t 24 -c 24```
 This command will perform a build in 24 threads.
 
 Now it is time for the search!
 
-``` ./target/release/colorid_bv search -b 30M_2H_K21.bxi -q geneX.fasta -g ```
+``` ./target/release/colorid_bv search -b 30M_2H_K21 -q geneX.fasta -g ```
 
 When we use this subcommand we get results presented as follows:
 ```
@@ -154,9 +154,9 @@ OPTIONS:
 ### 1. Create index
 
 Use a index you created previously based on k-mers:
-```./target/release/colorid_bv build -r ref_file_example.txt -b test -k 31 -s 50000000 -n 4```
+```./target/release/colorid_bv build -r ref_file_example.txt -b test -k 31 -s 50000000 -n 4 -c 4```
 Or build a much smaller (and thus more compute efficient) index based on minimizers:
-```./target/release/colorid_bv build -r ref_file_example.txt -b test -k 27 -mv 21 -s 50000000 -n 4```
+```./target/release/colorid_bv build -r ref_file_example.txt -b test -k 27 -mv 21 -s 50000000 -n 4 -c 4```
 
 ### 2. Classify reads
 
