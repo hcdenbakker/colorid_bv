@@ -73,19 +73,19 @@ OPTIONS:
 
 ### 1. Create index
 
-``` ./target/release/colorid_bv build -r ref_file_example.txt -b test -k 31 -s 50000000 -n 4```
+``` ./target/release/colorid_bv build -r ref_file_example.txt -b test -k 31 -s 50000000 -n 4 -c 4```
 
 Note! These parameters work well for single isolate, mixed samples with a few species. For complex metagenomic samples the BIGSI parameters need to be adjusted to adjust the false positive rate.
 
 ### 2. Search
 
-``` ./target/release/colorid_bv search -b test.bxi -q SRR4098796_1.fastq.gz -r SRR4098796_2.fastq.gz ```
+``` ./target/release/colorid_bv search -b test -q SRR4098796_1.fastq.gz -r SRR4098796_2.fastq.gz ```
 
 ### 3. results
 With the default settings `colorid` will report reference sequences that share >35% of their k-mers with the query (more about this threshold to follow later). Here is the output of a search with SRA accession SRR4098796 (L. monocytogenes lineage I) as query:
 ```
-SRR4098796_1.fastq.gz	3076072	Listeria_monocytogenes_F2365	0.87	134.25	126	475266
-SRR4098796_1.fastq.gz	3076072	Listeria_monocytogenes_SRR2167842	0.40	128.25	122	7831
+SRR4098796_1.fastq.gz	3074799	Listeria_monocytogenes_SRR2167842	0.40	107.90	93	10931
+SRR4098796_1.fastq.gz	3074799	Listeria_monocytogenes_F2365	0.87	112.65	105	663568
 ```
 In the first column we find the query, the second column shows the number of k-mers in the query, the third column displays the reference sequence, the fourth column the proportion of kmers in the reference shared with the query, the fifth column displays the average coverage based on k-mers that were uniquely matched with this reference, the sixth the modus of the coverage based on uniquely matched k-mers and the last column the number of uniquely matched k-mers.
 
