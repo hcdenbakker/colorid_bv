@@ -520,7 +520,7 @@ fn main() -> std::io::Result<()> {
         let hashes = value_t!(matches, "num_hashes", u64).unwrap_or(4);
         let threads = value_t!(matches, "threads", usize).unwrap_or(1);
         let quality = value_t!(matches, "quality", u8).unwrap_or(15);
-        let batch = value_t!(matches, "batch", usize).unwrap_or(300);
+        let batch = value_t!(matches, "batch", usize).unwrap_or(1);
         let minimizer = value_t!(matches, "minimizer", usize).unwrap_or(0);
         let map = build::tab_to_map(matches.value_of("ref_file").unwrap().to_string());
         let filter = value_t!(matches, "filter", isize).unwrap_or(-1);
